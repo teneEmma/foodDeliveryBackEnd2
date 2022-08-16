@@ -1,74 +1,81 @@
 import { query } from "express";
-import { ResponseObj, ResponseObj2 } from "../../models/ResponseModel/Response.js";
+import { ResponseObj } from "../../models/ResponseModel/Response.js";
 import { users } from "../../models/users/Users.js";
-import { validateLogin } from "./validation.js";
+import { createUserValidation, getUserValidation, authenticateUserValidation } from "./validation.js";
 
 
-export async function create(req, res){
+export async function createUser(req, res){
 
-    const {error} = validateLogin(req.body);
-    var myResponse = new ResponseObj2();
-    const response = await users.find({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+    const { error } = createUserValidation(req.body);
+    var response = new ResponseObj();
 
     if (error) {
-        return res.status(400).send(myResponse.onError(error.details[0].message));
-    }else{
-        if (response.length !== 0){
-            res.status(400).send(myResponse.onError("Trying To Duplicate Data"));
-        }else{
-
-            await users.create(req.body)
-                .then(success => {
-                    res.status(201).send(myResponse.onSuccess("User Created Successfuly", success));
-                }).catch(error => {
-                    res.status(400).send(myResponse.onError(error));
-                });
-        }
+        return res.status(400).send(response.onError(error.details[0].message));
     }
+
+    const userResult = await users.find({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+    
+    if (userResult.length !== 0){
+        return res.status(403).send(response.onError("Trying To Duplicate Data"));
+    }
+
+    await users.create(req.body)
+        .then(success => {
+            res.status(201).send(response.onSuccess("User Created Successfuly", success));
+        }).catch(error => {
+            res.status(400).send(response.onError(error));
+        });
 }
 
-export async function userExist(req, res){
-    var myResponse = new ResponseObj2();
-    const response = await users.find({$or: [{username: req.query.username}, {email: req.query.email}]});
+export async function getUser(req, res){
+    var response = new ResponseObj();
+    
+    const schema = { 
+        email: req.query.email,
+        username: req.query.username };
+    const { error } = getUserValidation(schema);
 
-    if(response.length === 0){
-        res.send(myResponse.onError("Free to use"));
-    }else{
-        res.send(myResponse.onSuccess("User Exist", response));
+    if(error){
+        return res.status(400).send(response.onError(error.details[0].message));
     }
+    const userResult = await users.find({$or: [{username: req.query.username}, {email: req.query.email}]});
+
+    if(userResult.length === 0){
+        return res.status(200).send(response.onError("Free to use"));
+    }
+    
+    res.status(200).send(response.onSuccess("User Exist", userResult));
 }
 
-export async function readAllUsers(req, res){
-    var responseObj =new ResponseObj2();
-    const response = await users.find()
+export async function getAllUsers(req, res){
+    var response =new ResponseObj();
+
+    const usersResult = await users.find()
     .catch(error=>{ 
-        responseObj.onError(error);
-        res.status(400).send(responseObj.onError(error));
+        return res.status(400).send(response.onError(error));
     });
 
-    if (response) {
-        console.log(responseObj.getReponse);
-        res.status(200).send(responseObj.onSuccess("availabble users", response));
-    } else {
-        res.send(responseObj.onError("Database Empty"));
-    }
+    res.status(200).send(response.onSuccess("List of Users Found", usersResult));
 }
 
-export async function authentification(req, res){
-    var myResponse = new ResponseObj2();
+export async function authenticateUser(req, res){
+    var response = new ResponseObj();
+
+    const { error } = authenticateUserValidation(req.body);
+
+    if(error){
+        return res.status(400).send(response.onError(error.details[0].message));
+    }
+
     const schema = {
         email: req.body.email,
         password: req.body.password
     };
 
-    const response = await users.findOne(schema)
+    const userResult = await users.findOne(schema)
     .catch(error=>{
-        res.status(404).send(myResponse.onError(error));
+        res.status(404).send(response.onError(error));
     });
 
-    if (response) {
-        res.status(200).send(myResponse.onSuccess("User Exist", response));
-    } else {
-        res.status(404).send(myResponse.onError("Couldn't Sign In"));
-    }
+    res.status(200).send(response.onSuccess("Available Users", userResult));
 }

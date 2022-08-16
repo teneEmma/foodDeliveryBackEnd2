@@ -1,17 +1,4 @@
-
-export const ResponseObj = {
-    message: String,
-    data: {
-        username: String,
-        email: String,
-        password: String,
-        phoneNumber: String,
-        userType: String
-    }
-};
-
-
-export class ResponseObj2{
+export class ResponseObj{
     
     constructor(){
         this.response = {
