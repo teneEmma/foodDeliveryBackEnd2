@@ -4,8 +4,8 @@ import router from "./Routes/routers.js";
 import bodyParser from "body-parser";
 const app = express();
 
-const myPORT = process.env.PORT || 3000;
-const myURI = `http:// 192.168.118.218:${myPORT}`;
+const PORT = process.env.PORT || 3000;
+const URI = `http:// 192.168.118.218:${PORT}`;
 
 app.use(bodyParser.json());
 //Routes ()=>
@@ -13,6 +13,6 @@ UserDatabase.connect();
 
 app.use(router);
 
-app.listen(myPORT, ()=>{
-    console.log(`Listening at ${myURI}`);
+app.listen(PORT, ()=>{
+    console.log(`Listening at ${URI}`);
 });
