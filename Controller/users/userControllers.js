@@ -3,7 +3,6 @@ import { ResponseObj } from "../../models/ResponseModel/Response.js";
 import { users } from "../../models/users/Users.js";
 import { createUserValidation, getUserValidation, authenticateUserValidation } from "./validation.js";
 
-
 export async function createUser(req, res){
 
     const { error } = createUserValidation(req.body);
