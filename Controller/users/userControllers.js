@@ -2,14 +2,17 @@ import { query } from "express";
 import { ResponseObj } from "../../models/ResponseModel/Response.js";
 import { users } from "../../models/users/Users.js";
 import { createUserValidation, getUserValidation, authenticateUserValidation } from "./validation.js";
+import bcrypt from "bcryptjs";
+import { generateToken, hashPasword } from "../../Middleware/userMiddleware.js";
 
 export async function createUser(req, res){
 
     const { error } = createUserValidation(req.body);
+    const { password } = req.body;
     var response = new ResponseObj();
 
     if (error) {
-        return res.status(400).send(response.onError(error.details[0].message));
+        return res.send(response.onError(error.details[0].message));
     }
 
     const userResult = await users.find({ $or: [{ username: req.body.username }, { email: req.body.email }] });
@@ -18,11 +21,15 @@ export async function createUser(req, res){
         return res.status(403).send(response.onError("Trying To Duplicate Data"));
     }
 
+    req.body.password = await hashPasword(password);
+
     await users.create(req.body)
         .then(success => {
-            res.status(201).send(response.onSuccess("User Created Successfuly", success));
+            const token = generateToken({user: req.body});
+            response.setToken(token);
+            res.status(201).send(response.onSuccess("User Created Successfully", success));
         }).catch(error => {
-            res.status(400).send(response.onError(error));
+            res.send(response.onError(error));
         });
 }
 
@@ -50,10 +57,11 @@ export async function getAllUsers(req, res){
     var response =new ResponseObj();
 
     const usersResult = await users.find()
-    .catch(error=>{ 
+    .catch(error=>{
         return res.status(400).send(response.onError(error));
     });
 
+    response.setToken(req.token);
     res.status(200).send(response.onSuccess("List of Users Found", usersResult));
 }
 
@@ -66,15 +74,20 @@ export async function authenticateUser(req, res){
         return res.status(400).send(response.onError(error.details[0].message));
     }
 
-    const schema = {
-        email: req.body.email,
-        password: req.body.password
-    };
+    const {email, password} = req.body;
 
-    const userResult = await users.findOne(schema)
+    const userResult = await users.findOne({email})
     .catch(error=>{
         res.status(404).send(response.onError(error));
     });
 
-    res.status(200).send(response.onSuccess("Available Users", userResult));
+    if(userResult){
+        const passwordsAreSame = await bcrypt.compare(password, userResult.password);
+        if (passwordsAreSame) {
+            return res.status(200).send(response.onSuccess("Available Users", userResult));
+        }
+        return res.send(response.onError("Wrong Password"));
+    }
+
+    res.send(response.onError("Email Is Not Registered"));
 }

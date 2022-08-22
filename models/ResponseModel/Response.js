@@ -6,10 +6,10 @@ export class ResponseObj{
             data: {
                 username: String,
                 email: String,
-                password: String,
                 phoneNumber: String,
                 userType: String
-            }
+            },
+            token: String
         };
     }
 
@@ -25,7 +25,7 @@ export class ResponseObj{
         return this.response;
     }
 
-//    getReponse(){
-//      return this.response;
-//   }
+    setToken(response) {
+        this.response.token = response;
+    }
 }

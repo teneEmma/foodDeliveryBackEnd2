@@ -26,7 +26,7 @@ export function getUserValidation(dataToValidate){
 export function authenticateUserValidation(dataToValidate){
     const joiSchema = Joi.object({
         email: Joi.string().email({ minDomainSegments: 2 }).trim(true).required(),
-        password: Joi.string().min(6).max(20).trim(true)
+        password: Joi.string().min(6).max(20).trim(true).required()
     });
     
     return joiSchema.validate(dataToValidate);
