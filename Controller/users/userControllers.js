@@ -52,6 +52,7 @@ export async function getUser(req, res){
     }
     
     userResult[0].password = undefined;
+    response.setToken(req.token);
     res.status(200).send(response.onSuccess("User Exists", userResult));
 }
 
