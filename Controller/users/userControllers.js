@@ -27,6 +27,7 @@ export async function createUser(req, res){
         .then(success => {
             const token = generateToken({user: req.body});
             response.setToken(token);
+            success.password = undefined;
             res.status(201).send(response.onSuccess("User Created Successfully", success));
         }).catch(error => {
             res.send(response.onError(error));
@@ -44,13 +45,14 @@ export async function getUser(req, res){
     if(error){
         return res.status(400).send(response.onError(error.details[0].message));
     }
-    const userResult = await users.find({$or: [{username: req.query.username}, {email: req.query.email}]});
+    var userResult = await users.find({$or: [{username: req.query.username}, {email: req.query.email}]});
 
     if(userResult.length === 0){
         return res.status(200).send(response.onError("Free to use"));
     }
     
-    res.status(200).send(response.onSuccess("User Exist", userResult));
+    userResult[0].password = undefined;
+    res.status(200).send(response.onSuccess("User Exists", userResult));
 }
 
 export async function getAllUsers(req, res){
@@ -75,14 +77,17 @@ export async function authenticateUser(req, res){
     }
 
     const {email, password} = req.body;
+    //TODO: In case the token info and the request data are different, we should implement an OTP request to validate the user
 
-    const userResult = await users.findOne({email})
+    var userResult = await users.findOne({email})
     .catch(error=>{
         res.status(404).send(response.onError(error));
     });
 
     if(userResult){
         const passwordsAreSame = await bcrypt.compare(password, userResult.password);
+        userResult.password = undefined;
+
         if (passwordsAreSame) {
             return res.status(200).send(response.onSuccess("Available Users", userResult));
         }

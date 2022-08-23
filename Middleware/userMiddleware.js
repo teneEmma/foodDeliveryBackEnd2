@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import { ResponseObj } from "../models/ResponseModel/Response.js";
 import bcrypt from "bcryptjs";
 
-
 const secret = "Kodage's Very Secret";
 const maxAge = 6000;
 
@@ -20,7 +19,8 @@ export function authenticateToken(req, res, next){
 
     var response = new ResponseObj();
     response.setToken(token);
-    if(token === null){
+
+    if(token === undefined){
         return res.status(401).send(response.onError("Empty Header"));
     }
     
@@ -30,7 +30,7 @@ export function authenticateToken(req, res, next){
         }
 
         req.token = token;
-        req.decodedToken = decodedToken;//Improvising
+        //req.decodedToken = decodedToken;//Improvising
         next();
     });
 }
@@ -39,17 +39,20 @@ export function checkUserType(req, res, next){
     const token = req.headers.authorization;
 
     var response = new ResponseObj();
-    if (!token) {
-        return res.redirect('/login');
+    if (token === undefined) {
+        return res.status(401).send(response.onError("Empty Header"));
     }
 
     jwt.verify(token, "Kodage's Very Secret", (error, decodedToken) => {
         if (error) {
-            return res.redirect("/loginexp");
+            return res.status(401).send(response.onError("Token invalid or Expired"));
         }
 
-        const bearerToken = token.split(' ')[1];
-        req.token = bearerToken;
+        const { userType } = decodedToken.user;
+        if(userType === "CLIENT"){
+            return res.status(401).send(response.onError("Not Authorised To Make Such a Request"));
+        }
+
         next();
     });
 }
