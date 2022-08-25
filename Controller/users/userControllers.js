@@ -3,7 +3,7 @@ import { ResponseObj } from "../../models/ResponseModel/Response.js";
 import { users } from "../../models/users/Users.js";
 import { createUserValidation, getUserValidation, authenticateUserValidation } from "./validation.js";
 import bcrypt from "bcryptjs";
-import { generateToken, hashPasword } from "../../Middleware/userMiddleware.js";
+import { generateRefreshToken, generateToken, hashPasword } from "../../Middleware/userMiddleware.js";
 
 export async function createUser(req, res){
 
@@ -20,13 +20,11 @@ export async function createUser(req, res){
     if (userResult.length !== 0){
         return res.status(403).send(response.onError("Trying To Duplicate Data"));
     }
-
+    
     req.body.password = await hashPasword(password);
 
     await users.create(req.body)
         .then(success => {
-            const token = generateToken({user: req.body});
-            response.setToken(token);
             success.password = undefined;
             res.status(201).send(response.onSuccess("User Created Successfully", success));
         }).catch(error => {
@@ -52,7 +50,6 @@ export async function getUser(req, res){
     }
     
     userResult[0].password = undefined;
-    response.setToken(req.token);
     res.status(200).send(response.onSuccess("User Exists", userResult));
 }
 
@@ -64,7 +61,6 @@ export async function getAllUsers(req, res){
         return res.status(400).send(response.onError(error));
     });
 
-    response.setToken(req.token);
     res.status(200).send(response.onSuccess("List of Users Found", usersResult));
 }
 
@@ -78,7 +74,6 @@ export async function authenticateUser(req, res){
     }
 
     const {email, password} = req.body;
-    //TODO: In case the token info and the request data are different, we should implement an OTP request to validate the user
 
     var userResult = await users.findOne({email})
     .catch(error=>{
@@ -90,10 +85,33 @@ export async function authenticateUser(req, res){
         userResult.password = undefined;
 
         if (passwordsAreSame) {
-            return res.status(200).send(response.onSuccess("Available Users", userResult));
+            const refreshToken = generateRefreshToken({email: req.body.email});
+            const token = generateToken({ user: userResult});
+            response.setTokens(token, refreshToken);
+            return res.status(200).send(response.onSuccess("Login Successful", userResult));
         }
         return res.send(response.onError("Wrong Password"));
     }
 
     res.send(response.onError("Email Is Not Registered"));
+
+}
+
+export async function refreshToken(req, res){
+    var response = new ResponseObj();
+
+    const{ email } =req.decodedToken;
+
+    var userResult = await users.findOne({ email })
+        .catch(error => {
+            res.status(404).send(response.onError(error));
+        });
+
+        if(userResult){
+            const accessToken = generateToken({user: userResult});
+            response.setTokens(accessToken, req.refreshToken);
+            userResult.password = undefined;
+            
+            return res.status(200).send(response.onSuccess("Token Refreshed Successfully", userResult));
+        }
 }

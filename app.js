@@ -1,6 +1,6 @@
 import express from "express";
 import UserDatabase from "./database/database.js";
-import router from "./Routes/routers.js";
+import routes from "./Routes/routes.js";
 import bodyParser from "body-parser";
 const app = express();
 
@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 
 UserDatabase.connect();
 
-app.use(router);
+app.use(routes);
 
 app.listen(PORT, ()=>{
     console.log(`Listening at ${URI}`);

@@ -9,7 +9,8 @@ export class ResponseObj{
                 phoneNumber: String,
                 userType: String
             },
-            token: String
+            token: String,
+            refreshToken: String
         };
     }
 
@@ -25,7 +26,8 @@ export class ResponseObj{
         return this.response;
     }
 
-    setToken(response) {
-        this.response.token = response;
+    setTokens(accessT, refreshT) {
+        this.response.token = accessT;
+        this.response.refreshToken = refreshT;
     }
 }
