@@ -10,7 +10,8 @@ export class ResponseObj{
                 userType: String
             },
             token: String,
-            refreshToken: String
+            refreshToken: String,
+            code: Int
         };
     }
 
