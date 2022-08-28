@@ -11,19 +11,22 @@ export class ResponseObj{
             },
             token: String,
             refreshToken: String,
-            code: Int
+            code: Number
         };
     }
 
-    onSuccess(message, data){
+    onSuccess(message, data,token = null, code=0){
         this.response.data = data;
         this.response.message = message;
+        this.response.code = code;
         return this.response;
     }
+    
 
-    onError(message){
+    onError(message, token = null, code=0){
         this.response.data = null;
         this.response.message = message;
+        this.response.code = code;
         return this.response;
     }
 

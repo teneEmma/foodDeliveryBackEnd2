@@ -28,7 +28,7 @@ export async function createUser(req, res){
             success.password = undefined;
             res.status(201).send(response.onSuccess("User Created Successfully", success));
         }).catch(error => {
-            res.send(response.onError(error));
+            res.status(400).send(response.onError(error));
         });
 }
 
@@ -55,13 +55,13 @@ export async function getUser(req, res){
 
 export async function getAllUsers(req, res){
     var response =new ResponseObj();
-
+    response.setTokens(req.token);
     const usersResult = await users.find()
     .catch(error=>{
         return res.status(400).send(response.onError(error));
     });
 
-    res.status(200).send(response.onSuccess("List of Users Found", usersResult));
+    res.status(200).send(response.onSuccess("List of Users", usersResult));
 }
 
 export async function authenticateUser(req, res){
@@ -69,11 +69,13 @@ export async function authenticateUser(req, res){
 
     const { error } = authenticateUserValidation(req.body);
 
+    console.log("requestbody = "+JSON.stringify(req.body));
+    
     if(error){
         return res.status(400).send(response.onError(error.details[0].message));
     }
 
-    const {email, password} = req.body;
+    const {email, password} = req.body;//TODO: put this line below users.findOne. Beacause it is an unused resource here
 
     var userResult = await users.findOne({email})
     .catch(error=>{
@@ -90,10 +92,10 @@ export async function authenticateUser(req, res){
             response.setTokens(token, refreshToken);
             return res.status(200).send(response.onSuccess("Login Successful", userResult));
         }
-        return res.send(response.onError("Wrong Password"));
+        return res.status(404).send(response.onError("Wrong Password"));
     }
 
-    res.send(response.onError("Email Is Not Registered"));
+    res.status(404).send(response.onError("Email Is Not Registered"));
 
 }
 
@@ -114,4 +116,9 @@ export async function refreshToken(req, res){
             
             return res.status(200).send(response.onSuccess("Token Refreshed Successfully", userResult));
         }
+}
+
+export async function personal(req, res){
+     var password= await hashPasword(req.body.password);
+    res.send(password);
 }
