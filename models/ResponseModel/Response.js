@@ -15,15 +15,14 @@ export class ResponseObj{
         };
     }
 
-    onSuccess(message, data,token = null, code=0){
+    onSuccess(message, data, code=0){
         this.response.data = data;
         this.response.message = message;
         this.response.code = code;
         return this.response;
     }
-    
 
-    onError(message, token = null, code=0){
+    onError(message, code=0){
         this.response.data = null;
         this.response.message = message;
         this.response.code = code;

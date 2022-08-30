@@ -12,7 +12,7 @@ export async function createUser(req, res){
     var response = new ResponseObj();
 
     if (error) {
-        return res.send(response.onError(error.details[0].message));
+        return res.status(400).send(response.onError(error.details[0].message));
     }
 
     const userResult = await users.find({ $or: [{ username: req.body.username }, { email: req.body.email }] });
@@ -92,10 +92,9 @@ export async function authenticateUser(req, res){
             response.setTokens(token, refreshToken);
             return res.status(200).send(response.onSuccess("Login Successful", userResult));
         }
-        return res.status(404).send(response.onError("Wrong Password"));
     }
 
-    res.status(404).send(response.onError("Email Is Not Registered"));
+    res.status(404).send(response.onError("Email or Password incorrect"));
 
 }
 

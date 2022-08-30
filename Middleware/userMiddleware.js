@@ -81,13 +81,10 @@ export function authenticateToken(req, res, next){
     
     jwt.verify(token, TOKEN_SECRET, (error, decodedToken)=>{
         if(error){
-            res.status(401).send(response.onError(JSON.stringify(error)));
-            return console.log(JSON.stringify(response)  + " error ->" + error);
-
+            return res.status(401).send(response.onError(JSON.stringify(error), 4000));
         }
 
         req.token = token;
-        //req.decodedToken = decodedToken;//Improvising
         next();
     });
 
