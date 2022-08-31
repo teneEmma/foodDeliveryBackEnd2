@@ -1,15 +1,15 @@
-import { query } from "express";
-import { ResponseObj } from "../../models/ResponseModel/Response.js";
-import { users } from "../../models/users/Users.js";
-import { createUserValidation, getUserValidation, authenticateUserValidation } from "./validation.js";
-import bcrypt from "bcryptjs";
-import { generateRefreshToken, generateToken, hashPasword } from "../../Middleware/userMiddleware.js";
+const ResponseObj = require("../../models/ResponseModel/Response.js");
+const users = require("../../models/users/Users.js");
+const { createUserValidation, getUserValidation, authenticateUserValidation } = require("./validation.js");
+const bcrypt = require("bcryptjs");
+const { generateRefreshToken, generateToken, hashPasword } = require("../../Middleware/userMiddleware.js");
+var response = new ResponseObj();
 
-export async function createUser(req, res){
+async function createUser(req, res){
 
     const { error } = createUserValidation(req.body);
     const { password } = req.body;
-    var response = new ResponseObj();
+     
 
     if (error) {
         return res.status(400).send(response.onError(error.details[0].message));
@@ -32,8 +32,8 @@ export async function createUser(req, res){
         });
 }
 
-export async function getUser(req, res){
-    var response = new ResponseObj();
+async function getUser(req, res){
+     
     
     const schema = { 
         email: req.query.email,
@@ -53,7 +53,7 @@ export async function getUser(req, res){
     res.status(200).send(response.onSuccess("User Exists", userResult));
 }
 
-export async function getAllUsers(req, res){
+async function getAllUsers(req, res){
     var response =new ResponseObj();
     response.setTokens(req.token);
     const usersResult = await users.find()
@@ -64,8 +64,8 @@ export async function getAllUsers(req, res){
     res.status(200).send(response.onSuccess("List of Users", usersResult));
 }
 
-export async function authenticateUser(req, res){
-    var response = new ResponseObj();
+async function authenticateUser(req, res){
+     
 
     const { error } = authenticateUserValidation(req.body);
 
@@ -98,8 +98,8 @@ export async function authenticateUser(req, res){
 
 }
 
-export async function refreshToken(req, res){
-    var response = new ResponseObj();
+async function refreshToken(req, res){
+     
 
     const{ email } =req.decodedToken;
 
@@ -117,7 +117,9 @@ export async function refreshToken(req, res){
         }
 }
 
-export async function personal(req, res){
+async function personal(req, res){
      var password= await hashPasword(req.body.password);
     res.send(password);
 }
+
+module.exports = {getAllUsers, createUser, getUser, authenticateUser, refreshToken, personal};

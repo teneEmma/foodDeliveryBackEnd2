@@ -1,24 +1,30 @@
 {
   "name": "food-delivery-backend",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "",
-  "main": "app.js",
-  "type": "module",
+  "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
+  "jshintConfig": {
+    "esversion": 8,
+    "strict": "implied",
+    "devel": true,
+    "node": true,
+    "globals": {}
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "dotenv": "^16.0.1",
     "esm": "^3.2.25",
     "express": "^4.18.1",
-    "jsonwebtoken": "^8.5.1"
-  },
-  "devDependencies": {
-    "dotenv": "^16.0.1",
     "joi": "^17.6.0",
-    "mongoose": "^6.4.6",
+    "jshint": "^2.13.5",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.5.3",
     "nodemon": "^2.0.19"
   }
 }

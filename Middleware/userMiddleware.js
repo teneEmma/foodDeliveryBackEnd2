@@ -1,32 +1,33 @@
-import jwt from "jsonwebtoken";
-import { ResponseObj } from "../models/ResponseModel/Response.js";
-import bcrypt from "bcryptjs";
-import { getUserValidation } from "../Controller/users/validation.js";
-import { users } from "../models/users/Users.js";
+const jwt = require("jsonwebtoken");
+var ResponseObj = require("../models/ResponseModel/Response.js");
+const bcrypt = require("bcryptjs");
+const { getUserValidation } = require("../Controller/users/validation.js");
+const users = require("../models/users/Users.js");
 
 const TOKEN_SECRET = "Kodage's Refresh Very Secret";
 const REFRESH_TOKEN_SECRET = "Kodage's Very Secret";
 const maxAge = 120;
 const maxRefreshAge = 240;
+var response = new ResponseObj();
 
-export function generateToken(user) {
+function generateToken(user) {
     return jwt.sign(user, TOKEN_SECRET, { expiresIn: maxAge });
 }
 
-export function generateRefreshToken(user){
+function generateRefreshToken(user){
     return jwt.sign(user, REFRESH_TOKEN_SECRET, { expiresIn: maxRefreshAge });
 }
 
-export async function hashPasword(password){
+async function hashPasword(password){
         const salt = await bcrypt.genSalt(10);
         return await bcrypt.hash(password, salt);
 }
 
-export function authenticateRefreshToken(req, res, next){
+function authenticateRefreshToken(req, res, next){
     const { TokenExpiredError } = jwt;
     const refreshToken = req.headers.authorization;
 
-    var response = new ResponseObj();
+     
     response.setTokens(null, refreshToken);
 
     if (refreshToken === undefined) {
@@ -35,7 +36,7 @@ export function authenticateRefreshToken(req, res, next){
 
     jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (error, decodedToken) => {
         if (error instanceof TokenExpiredError) {
-            return res.status(301).send(response.onError("Refresh token is expired. You need to SignIn Again"));
+            return res.status(401).send(response.onError("Refresh token is expired. You need to SignIn Again", 4001));
         }else if(error){
             return res.status(401).send(response.onError(JSON.stringify(error)));
         }
@@ -46,8 +47,8 @@ export function authenticateRefreshToken(req, res, next){
     });
 }
 
-export async function verifyIfUserExist(req, res, next){
-    var response = new ResponseObj();
+async function verifyIfUserExist(req, res, next){
+     
 
     const schema = {
         email: req.query.email,
@@ -67,12 +68,12 @@ export async function verifyIfUserExist(req, res, next){
     next(); 
 }
 
-export function authenticateToken(req, res, next){
+function authenticateToken(req, res, next){
     const token = req.headers.authorization;
 
     console.log(token);
 
-    var response = new ResponseObj();
+    
     response.setTokens(token, null);
 
     if(token === undefined){
@@ -90,10 +91,10 @@ export function authenticateToken(req, res, next){
 
 }
 
-export function checkUserType(req, res, next){
+function checkUserType(req, res, next){
     const token = req.headers.authorization;
 
-    var response = new ResponseObj();
+     
     if (token === undefined) {
         return res.status(401).send(response.onError("Empty Header"));
     }
@@ -111,3 +112,8 @@ export function checkUserType(req, res, next){
         next();
     });
 }
+
+module.exports = {
+    generateToken, generateRefreshToken, authenticateRefreshToken, 
+    authenticateToken, hashPasword, verifyIfUserExist, checkUserType 
+};

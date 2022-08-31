@@ -25,6 +25,4 @@ app.post('/refreshToken', authenticateRefreshToken, refreshToken);
 
 app.post('/personal', personal);
 
-app.listen(PORT, () => {
-    console.log(`Listening at ${URI}`);
-});
+module.exports = app;

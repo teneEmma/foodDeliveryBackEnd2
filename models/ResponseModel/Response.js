@@ -1,4 +1,4 @@
-export class ResponseObj{
+module.exports = class ResponseObj{
     
     constructor(){
         this.response = {
@@ -33,4 +33,4 @@ export class ResponseObj{
         this.response.token = accessT;
         this.response.refreshToken = refreshT;
     }
-}
+};

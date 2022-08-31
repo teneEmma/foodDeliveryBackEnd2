@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const mongoDBServer = "mongodb+srv://kodage:MuvqzFP8quNQUdbU@fooddeliveryusers.ksoak.mongodb.net/deliveryApp?retryWrites=true&w=majority";
 class UserDatabase{
@@ -13,4 +13,4 @@ class UserDatabase{
     }
 }
 
-export default UserDatabase;
+module.exports = UserDatabase;
