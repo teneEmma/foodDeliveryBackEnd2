@@ -6,9 +6,6 @@ const { verifyIfUserExist, authenticateToken, checkUserType, authenticateRefresh
 const { createUser, personal, authenticateUser, getAllUsers, getUser, refreshToken } = require("./Controller/users/userControllers.js");
 const app = express();
 
-const PORT = process.env.PORT || 3000;
-const URI = `http:// 192.168.118.218:${PORT}`;
-
 app.use(bodyParser.json());
 
 UserDatabase.connect();

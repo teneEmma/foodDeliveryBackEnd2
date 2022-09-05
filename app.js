@@ -1,13 +1,11 @@
 const express = require("express");
 const UserDatabase = require("./database/database.js");
 const routes = require("./Routes/routes.js");
+require("dotenv").config();
 const bodyParser = require("body-parser");
 const { verifyIfUserExist, authenticateToken, checkUserType, authenticateRefreshToken } = require("./Middleware/userMiddleware.js");
 const { createUser, personal, authenticateUser, getAllUsers, getUser, refreshToken } = require("./Controller/users/userControllers.js");
 const app = express();
-
-const PORT = process.env.PORT || 3000;
-const URI = `http:// 192.168.118.218:${PORT}`;
 
 app.use(bodyParser.json());
 
@@ -25,6 +23,6 @@ app.post('/refreshToken', authenticateRefreshToken, refreshToken);
 
 app.post('/personal', personal);
 
-app.listen(PORT, () => {
-    console.log(`Listening at ${URI}`);
+app.listen(process.env.PORT, () => {
+    console.log(`Listening at ${process.env.SERVER_URI}`);
 });

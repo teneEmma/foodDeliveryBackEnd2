@@ -1,8 +1,7 @@
 const Joi = require("joi");
+const userType = require("../../Constants/otherConstants");
 
-const userType = ["ADMIN", "CLIENT"];
-
-function createUserValidation(userToValidate){
+function validateCreateUserModel(userToValidate){
     const joiSchema = Joi.object({
         username: Joi.string().min(4).max(15).required(),
         email: Joi.string().email({minDomainSegments: 2}).trim(true).required(),
@@ -14,7 +13,7 @@ function createUserValidation(userToValidate){
     return joiSchema.validate(userToValidate);
 }
 
-function getUserValidation(dataToValidate){
+function validateUserModelFromHeader(dataToValidate){
     const joiSchema = Joi.object({
         username: Joi.string().min(4).max(15),
         email: Joi.string().email({ minDomainSegments: 2 }).trim(true)
@@ -23,7 +22,7 @@ function getUserValidation(dataToValidate){
     return joiSchema.validate(dataToValidate);
 }
 
-function authenticateUserValidation(dataToValidate){
+function validateLoginUserModel(dataToValidate){
     const joiSchema = Joi.object({
         email: Joi.string().email({ minDomainSegments: 2 }).trim(true).required(),
         password: Joi.string().min(6).max(20).trim(true).required()
@@ -33,5 +32,4 @@ function authenticateUserValidation(dataToValidate){
 }
 
 module.exports = {
-    createUserValidation, getUserValidation, authenticateUserValidation
-};
+    validateCreateUserModel, validateUserModelFromHeader, validateLoginUserModel};

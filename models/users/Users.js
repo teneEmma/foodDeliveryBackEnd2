@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const userSchema = mongoose.Schema({
     username : {type: String, unique: true, required: true},
@@ -8,5 +9,5 @@ const userSchema = mongoose.Schema({
     userType : String
 });
 
-const users = mongoose.model("users",userSchema);
+const users = mongoose.model(process.env.MONGOOSE_SCHEMA_NAME,userSchema);
 module.exports = users;

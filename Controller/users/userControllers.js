@@ -1,24 +1,25 @@
 const ResponseObj = require("../../models/ResponseModel/Response.js");
 const users = require("../../models/users/Users.js");
-const { createUserValidation, getUserValidation, authenticateUserValidation } = require("./validation.js");
+const { validateCreateUserModel, validateUserModelFromHeader, validateLoginUserModel } = require("./validation.js");
 const bcrypt = require("bcryptjs");
-const { generateRefreshToken, generateToken, hashPasword } = require("../../Middleware/userMiddleware.js");
+const { generateRefreshToken, generateToken, hashPasword } = require("../../Controller/authenticationController.js");
+const MessageObj = require("../../Constants/messages.js");
+const code = require("../../Constants/networkCodes.js");
 var response = new ResponseObj();
 
 async function createUser(req, res){
 
-    const { error } = createUserValidation(req.body);
+    const { error } = validateCreateUserModel(req.body);
     const { password } = req.body;
      
-
     if (error) {
-        return res.status(400).send(response.onError(error.details[0].message));
+        return res.status(code.clientError.badrequest).send(response.onError(error.details[0].message));
     }
 
     const userResult = await users.find({ $or: [{ username: req.body.username }, { email: req.body.email }] });
     
     if (userResult.length !== 0){
-        return res.status(403).send(response.onError("Trying To Duplicate Data"));
+        return res.status(code.clientError.forbidden).send(response.onError(MessageObj.error.duplicatingData));
     }
     
     req.body.password = await hashPasword(password);
@@ -26,31 +27,30 @@ async function createUser(req, res){
     await users.create(req.body)
         .then(success => {
             success.password = undefined;
-            res.status(201).send(response.onSuccess("User Created Successfully", success));
+            res.status(code.successful.created).send(response.onSuccess(MessageObj.success.createdUser, success));
         }).catch(error => {
-            res.status(400).send(response.onError(error));
+            res.status(code.clientError.badrequest).send(response.onError(error));
         });
 }
 
 async function getUser(req, res){
      
-    
     const schema = { 
         email: req.query.email,
         username: req.query.username };
-    const { error } = getUserValidation(schema);
+    const { error } = validateUserModelFromHeader(schema);
 
     if(error){
-        return res.status(400).send(response.onError(error.details[0].message));
+        return res.status(code.clientError.badrequest).send(response.onError(error.details[0].message));
     }
     var userResult = await users.find({$or: [{username: req.query.username}, {email: req.query.email}]});
 
     if(userResult.length === 0){
-        return res.status(200).send(response.onError("Free to use"));
+        return res.status(code.successful.ok).send(response.onError(MessageObj.success.userNotTaken));
     }
     
     userResult[0].password = undefined;
-    res.status(200).send(response.onSuccess("User Exists", userResult));
+    res.status(code.successful.ok).send(response.onSuccess(MessageObj.error.userTaken, userResult));
 }
 
 async function getAllUsers(req, res){
@@ -58,28 +58,26 @@ async function getAllUsers(req, res){
     response.setTokens(req.token);
     const usersResult = await users.find()
     .catch(error=>{
-        return res.status(400).send(response.onError(error));
+        return res.status(code.clientError.badrequest).send(response.onError(error));
     });
 
-    res.status(200).send(response.onSuccess("List of Users", usersResult));
+    res.status(code.successful.ok).send(response.onSuccess(MessageObj.success.listOfUsers, usersResult));
 }
 
 async function authenticateUser(req, res){
+    var response = new ResponseObj();
      
-
-    const { error } = authenticateUserValidation(req.body);
-
-    console.log("requestbody = "+JSON.stringify(req.body));
-    
+    const { error } = validateLoginUserModel(req.body);
+  
     if(error){
-        return res.status(400).send(response.onError(error.details[0].message));
+        return res.status(code.clientError.badrequest).send(response.onError(error.details[0].message));
     }
 
-    const {email, password} = req.body;//TODO: put this line below users.findOne. Beacause it is an unused resource here
+    const {email, password} = req.body;
 
     var userResult = await users.findOne({email})
     .catch(error=>{
-        res.status(404).send(response.onError(error));
+        res.status(code.clientError.notFound).send(response.onError(error));
     });
 
     if(userResult){
@@ -90,22 +88,20 @@ async function authenticateUser(req, res){
             const refreshToken = generateRefreshToken({email: req.body.email});
             const token = generateToken({ user: userResult});
             response.setTokens(token, refreshToken);
-            return res.status(200).send(response.onSuccess("Login Successful", userResult));
+            return res.status(code.successful.Accepted).send(response.onSuccess(MessageObj.success.loggedIn, userResult));
         }
     }
 
-    res.status(404).send(response.onError("Email or Password incorrect"));
-
+    res.status(code.clientError.notFound).send(response.onError(MessageObj.error.credentialsIncorrect));
 }
 
 async function refreshToken(req, res){
      
-
     const{ email } =req.decodedToken;
 
     var userResult = await users.findOne({ email })
         .catch(error => {
-            res.status(404).send(response.onError(error));
+            res.status(code.successful.notFound).send(response.onError(error));
         });
 
         if(userResult){
@@ -113,7 +109,7 @@ async function refreshToken(req, res){
             response.setTokens(accessToken, req.refreshToken);
             userResult.password = undefined;
             
-            return res.status(200).send(response.onSuccess("Token Refreshed Successfully", userResult));
+            return res.status(code.successful.ok).send(response.onSuccess(MessageObj.success.refreshedToken, userResult));
         }
 }
 
