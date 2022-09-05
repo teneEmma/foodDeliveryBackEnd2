@@ -3,12 +3,7 @@ module.exports = class ResponseObj{
     constructor(){
         this.response = {
             message: String,
-            data: {
-                username: String,
-                email: String,
-                phoneNumber: String,
-                userType: String
-            },
+            data: {},
             token: String,
             refreshToken: String,
             code: Number

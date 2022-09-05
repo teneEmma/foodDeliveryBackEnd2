@@ -6,8 +6,8 @@ const users = require("../models/users/Users.js");
 
 const TOKEN_SECRET = "Kodage's Refresh Very Secret";
 const REFRESH_TOKEN_SECRET = "Kodage's Very Secret";
-const maxAge = 120;
-const maxRefreshAge = 240;
+const maxAge = 40;
+const maxRefreshAge = 60;
 var response = new ResponseObj();
 
 function generateToken(user) {
