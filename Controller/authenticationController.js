@@ -4,8 +4,8 @@ const bcrypt = require("bcryptjs");
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-const maxAge = process.env.maxAge;
-const maxRefreshAge = process.env.maxRefreshAge;
+const maxAge = process.env.MAX_AGE;
+const maxRefreshAge = process.env.MAX_REFRESH_AGE;
 
 function generateToken(user) {
     return jwt.sign(user, TOKEN_SECRET, { expiresIn: maxAge });

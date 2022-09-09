@@ -15,8 +15,6 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 function authenticateRefreshToken(req, res, next){
     const { TokenExpiredError } = jwt;
     const refreshToken = req.headers.authorization;
-     
-    response.setTokens(null, refreshToken);
 
     if (refreshToken === undefined) {
         return res.status(code.clientError.unauthorized).send(response.onError(MessageObj.error.headerEmpty));

@@ -55,12 +55,15 @@ async function getUser(req, res){
 
 async function getAllUsers(req, res){
     var response =new ResponseObj();
-    response.setTokens(req.token);
     const usersResult = await users.find()
     .catch(error=>{
         return res.status(code.clientError.badrequest).send(response.onError(error));
     });
 
+    usersResult.map(obj =>{
+        obj.password = undefined;
+        return obj;
+    });
     res.status(code.successful.ok).send(response.onSuccess(MessageObj.success.listOfUsers, usersResult));
 }
 
@@ -77,18 +80,17 @@ async function authenticateUser(req, res){
 
     var userResult = await users.findOne({email})
     .catch(error=>{
-        res.status(code.clientError.notFound).send(response.onError(error));
+        return res.status(code.clientError.notFound).send(response.onError(error));
     });
 
     if(userResult){
         const passwordsAreSame = await bcrypt.compare(password, userResult.password);
-        userResult.password = undefined;
 
         if (passwordsAreSame) {
             const refreshToken = generateRefreshToken({email: req.body.email});
             const token = generateToken({ user: userResult});
             response.setTokens(token, refreshToken);
-            return res.status(code.successful.Accepted).send(response.onSuccess(MessageObj.success.loggedIn, userResult));
+            return res.status(code.successful.Accepted).send(response.onSuccess(MessageObj.success.loggedIn, undefined));
         }
     }
 
@@ -106,16 +108,10 @@ async function refreshToken(req, res){
 
         if(userResult){
             const accessToken = generateToken({user: userResult});
-            response.setTokens(accessToken, req.refreshToken);
-            userResult.password = undefined;
+            response.setTokens(accessToken);
             
-            return res.status(code.successful.ok).send(response.onSuccess(MessageObj.success.refreshedToken, userResult));
+            return res.status(code.successful.ok).send(response.onSuccess(MessageObj.success.refreshedToken, undefined));
         }
 }
 
-async function personal(req, res){
-     var password= await hashPasword(req.body.password);
-    res.send(password);
-}
-
-module.exports = {getAllUsers, createUser, getUser, authenticateUser, refreshToken, personal};
+module.exports = {getAllUsers, createUser, getUser, authenticateUser, refreshToken};

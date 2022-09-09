@@ -10,14 +10,14 @@ module.exports = class ResponseObj{
         };
     }
 
-    onSuccess(message, data, code=0){
+    onSuccess(message, data, code=undefined){
         this.response.data = data;
         this.response.message = message;
         this.response.code = code;
         return this.response;
     }
 
-    onError(message, code=0){
+    onError(message, code=undefined){
         this.response.data = null;
         this.response.message = message;
         this.response.code = code;
