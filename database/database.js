@@ -1,16 +1,12 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
+require("dotenv").config();
 
-const mongoDBServer = "mongodb+srv://kodage:MuvqzFP8quNQUdbU@fooddeliveryusers.ksoak.mongodb.net/deliveryApp?retryWrites=true&w=majority";
+const mongoDBServer = process.env.MONGOOSE_URI;
 class UserDatabase{
 
     static connect(){
-         mongoose.connect(mongoDBServer)
-        .then(()=>{
-            console.log("connection successfull with server");
-        }).catch(error =>{
-            console.log(`couldn't connect with mongodb \nerror --->${error}<---`);
-        });
+         mongoose.connect(mongoDBServer);
     }
 }
 
-export default UserDatabase;
+module.exports = UserDatabase;

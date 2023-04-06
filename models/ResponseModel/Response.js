@@ -1,31 +1,31 @@
-export class ResponseObj{
+module.exports = class ResponseObj{
     
     constructor(){
         this.response = {
             message: String,
-            data: {
-                username: String,
-                email: String,
-                password: String,
-                phoneNumber: String,
-                userType: String
-            }
+            data: {},
+            token: String,
+            refreshToken: String,
+            code: Number
         };
     }
 
-    onSuccess(message, data){
+    onSuccess(message, data, code=undefined){
         this.response.data = data;
         this.response.message = message;
+        this.response.code = code;
         return this.response;
     }
 
-    onError(message){
+    onError(message, code=undefined){
         this.response.data = null;
         this.response.message = message;
+        this.response.code = code;
         return this.response;
     }
 
-//    getReponse(){
-//      return this.response;
-//   }
-}
+    setTokens(accessT, refreshT) {
+        this.response.token = accessT;
+        this.response.refreshToken = refreshT;
+    }
+};
